@@ -12,7 +12,7 @@ import "./style.css";
 import "./leafletWorkaround.ts";
 
 // Deterministic random number generator
-// import luck from "./luck.ts";
+import luck from "./luck.ts";
 
 // These all seem like reasonable things to take straight from the example
 
@@ -25,7 +25,10 @@ const OAKES_CLASSROOM: Cell = {
 // Tunable gameplay parameters
 const GAMEPLAY_ZOOM_LEVEL = 19;
 const NEIGHBORHOOD_SIZE = 8;
-// const CACHE_SPAWN_PROBABILITY = 0.1;
+const CACHE_SPAWN_PROBABILITY = 0.1;
+// Seed provided by Dogulas Adams, in the book "Restaurant at the End of the Universe"
+const SEED =
+  "In the beginning, the universe was created. This has made a lot of people very angry and been widely regarded as a bad move.";
 
 const map = leafletFunctions.makeMap(document.getElementById("map")!, {
   center: OAKES_CLASSROOM,
@@ -38,8 +41,11 @@ const map = leafletFunctions.makeMap(document.getElementById("map")!, {
 
 leafletFunctions.placePlayerMarker(map, OAKES_CLASSROOM);
 
-for (let i = -NEIGHBORHOOD_SIZE; i <= NEIGHBORHOOD_SIZE; i += 3) {
-  for (let j = -NEIGHBORHOOD_SIZE; j <= NEIGHBORHOOD_SIZE; j += 2) {
-    leafletFunctions.placeCache(map, OAKES_CLASSROOM, { i, j });
+// Add caches to the map by cell numbers, using the luck function to determine if a cache should be placed
+for (let i = -NEIGHBORHOOD_SIZE; i <= NEIGHBORHOOD_SIZE; i++) {
+  for (let j = -NEIGHBORHOOD_SIZE; j <= NEIGHBORHOOD_SIZE; j++) {
+    if (luck([i, j].toString() + SEED) < CACHE_SPAWN_PROBABILITY) {
+      leafletFunctions.placeCache(map, OAKES_CLASSROOM, { i, j });
+    }
   }
 }
