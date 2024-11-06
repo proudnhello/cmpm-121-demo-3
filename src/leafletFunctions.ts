@@ -66,6 +66,7 @@ export function placeCache(
   origin: GeoLocation,
   arrayLoc: ArrayIndex,
 ) {
+  // Draw a rectangle to represent the cache
   const bounds = leaflet.latLngBounds([
     calculateGeoLocation(origin, arrayLoc),
     calculateGeoLocation(origin, { i: arrayLoc.i + 1, j: arrayLoc.j + 1 }),
@@ -75,6 +76,7 @@ export function placeCache(
   let cache;
   [cache, arrayLoc] = createCache(arrayLoc, INITIAL_COINS);
 
+  // Add a popup to the cache rectangle, with two buttons
   rect.bindPopup(() => {
     const popup = document.createElement("div");
     popup.innerHTML = `
@@ -82,7 +84,7 @@ export function placeCache(
       <button id="collect">Collect</button>
       <button id="deposit">Deposit</button>
     `;
-
+    // The collect button will deposit the cache's coins into the player's inventory
     popup.querySelector<HTMLButtonElement>("#collect")!.addEventListener(
       "click",
       () => {
@@ -93,6 +95,7 @@ export function placeCache(
       },
     );
 
+    // The deposit button will deposit the player's coins into the cache
     popup.querySelector<HTMLButtonElement>("#deposit")!.addEventListener(
       "click",
       () => {

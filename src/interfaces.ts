@@ -16,12 +16,14 @@ export interface ArrayIndex {
   cache?: Cache; // An array index can have a cache associated with it
 }
 
+// A coin is a unique object that can be deposited in a cache
 export interface Coin {
   serial: string;
   originIndex: ArrayIndex;
   owner: Cache;
 }
 
+// A cache is a location where coins can be deposited and collected
 export interface Cache {
   index: ArrayIndex;
   coins: Coin[];
@@ -31,10 +33,11 @@ export interface Cache {
   coinCount(): number;
 }
 
+// This function creates a cache at a given index, and fills it with a random number of coins up to a maximum
 export function createCache(
   index: ArrayIndex,
   maxInitialCoins: number,
-): [Cache, ArrayIndex] {
+): [Cache, ArrayIndex] { // This function returns both the cache and the index, because the index will be updated
   const cache: Cache = {
     index,
     coins: [],
@@ -43,7 +46,6 @@ export function createCache(
         return;
       }
       coin.owner = this;
-      console.log(coin.serial);
       this.coins.push(coin);
     },
     collectCoin() {
@@ -57,8 +59,7 @@ export function createCache(
   const coinNum = luck(
     [index.i, index.j, "https://www.youtube.com/watch?v=Jk5L3DRaqjs"]
       .toString(),
-  ) *
-    maxInitialCoins;
+  ) * maxInitialCoins; // This formatting is attrocious, but it's what deno fmt believes is correct
   console.log(coinNum);
 
   for (let i = 0; i < coinNum; i++) {
@@ -70,6 +71,7 @@ export function createCache(
   return [cache, index];
 }
 
+// This function generates a coin at a given index, with a unique serial number based on the index
 export function generateCoin(originIndex: ArrayIndex): Coin {
   return {
     serial: luck(
@@ -84,12 +86,14 @@ export function generateCoin(originIndex: ArrayIndex): Coin {
   };
 }
 
+// This cache is the player's inventory
 export const player = createCache({ i: 0, j: 0 }, 0)[0];
-
-export const playerUpdateEvent = new Event("player-update");
 
 export const playerDiv = document.getElementById("player")!;
 playerDiv.innerHTML = "You have " + player.coinCount().toString() + " coins";
 playerDiv.addEventListener("player-update", () => {
   playerDiv.innerHTML = "You have " + player.coinCount().toString() + " coins";
 });
+
+// This event is used to update the player's inventory display
+export const playerUpdateEvent = new Event("player-update");
