@@ -39,7 +39,11 @@ export function createCache(
     index,
     coins: [],
     depositCoin(coin: Coin) {
+      if (!coin) {
+        return;
+      }
       coin.owner = this;
+      console.log(coin.serial);
       this.coins.push(coin);
     },
     collectCoin() {
@@ -50,7 +54,10 @@ export function createCache(
     },
   };
 
-  const coinNum = luck([index.i, index.j, "Sillicon Dreams"].toString()) *
+  const coinNum = luck(
+    [index.i, index.j, "https://www.youtube.com/watch?v=Jk5L3DRaqjs"]
+      .toString(),
+  ) *
     maxInitialCoins;
   console.log(coinNum);
 
@@ -65,19 +72,11 @@ export function createCache(
 
 export function generateCoin(originIndex: ArrayIndex): Coin {
   return {
-    // Seed comes from https://www.youtube.com/watch?v=9gIMZ0WyY88
     serial: luck(
       [
         originIndex.i,
         originIndex.j,
-        `From the moment I understood the weakness of my flesh, it disgusted me. 
-        I crave the strength and certainty of steel.
-        I aspire to the purity of the blessed machine.
-        Your kind cling to the crude biomass you call the temple, as if it will not decay and fail you.
-        In time, you will beg my kind to save you.
-        But I am already saved.
-        For the machine is immortal.
-        Even in death, I serve the Omnissiah`,
+        `https://www.youtube.com/watch?v=gBmL_UqJnEA`,
       ].toString(),
     ).toString(),
     originIndex,
@@ -85,4 +84,12 @@ export function generateCoin(originIndex: ArrayIndex): Coin {
   };
 }
 
-export const _player = createCache({ i: 0, j: 0 }, 0)[0];
+export const player = createCache({ i: 0, j: 0 }, 0)[0];
+
+export const playerUpdateEvent = new Event("player-update");
+
+export const playerDiv = document.getElementById("player")!;
+playerDiv.innerHTML = "You have " + player.coinCount().toString() + " coins";
+playerDiv.addEventListener("player-update", () => {
+  playerDiv.innerHTML = "You have " + player.coinCount().toString() + " coins";
+});

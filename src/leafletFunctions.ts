@@ -4,7 +4,14 @@ import leaflet, { type LatLngExpression } from "leaflet";
 // Fix missing marker images
 import "./leafletWorkaround.ts";
 
-import { ArrayIndex, createCache, GeoLocation } from "./interfaces.ts";
+import {
+  ArrayIndex,
+  createCache,
+  GeoLocation,
+  player,
+  playerDiv,
+  playerUpdateEvent,
+} from "./interfaces.ts";
 
 // Basically, this file exists because I'm paranoid about the possibility of swapping out the leaflet library for something else in the future.
 // The professor seems to be going on about how we should make it easy to swap out libraries, and I *suspect* that's because he's going to make us do it at some point.
@@ -68,7 +75,36 @@ export function placeCache(
   let cache;
   [cache, arrayLoc] = createCache(arrayLoc, INITIAL_COINS);
 
-  rect.bindPopup(`Cache with ${cache.coinCount()} coins`);
+  rect.bindPopup(() => {
+    const popup = document.createElement("div");
+    popup.innerHTML = `
+      <div>There is a cache here at "${arrayLoc.i},${arrayLoc.j}". It has ${cache.coinCount()} coins.</div>
+      <button id="collect">Collect</button>
+      <button id="deposit">Deposit</button>
+    `;
+
+    popup.querySelector<HTMLButtonElement>("#collect")!.addEventListener(
+      "click",
+      () => {
+        player.depositCoin(cache.collectCoin());
+        playerDiv.dispatchEvent(playerUpdateEvent);
+        popup.querySelector<HTMLDivElement>("div")!.innerHTML =
+          `There is a cache here at "${arrayLoc.i},${arrayLoc.j}". It has ${cache.coinCount()} coins.`;
+      },
+    );
+
+    popup.querySelector<HTMLButtonElement>("#deposit")!.addEventListener(
+      "click",
+      () => {
+        cache.depositCoin(player.collectCoin());
+        playerDiv.dispatchEvent(playerUpdateEvent);
+        popup.querySelector<HTMLDivElement>("div")!.innerHTML =
+          `There is a cache here at "${arrayLoc.i},${arrayLoc.j}". It has ${cache.coinCount()} coins.`;
+      },
+    );
+
+    return popup;
+  });
 
   rect.addTo(map);
 }
