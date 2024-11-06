@@ -1,8 +1,7 @@
 // Hopefully, no need to import leaflet, as all the functions are exported from leafletFunctions.ts
 import * as leafletFunctions from "./leafletFunctions.ts";
 
-// Type alias to avoid having to type leafletFunctions
-type Cell = leafletFunctions.GeoLocation;
+import { GeoLocation } from "./interfaces.ts";
 
 // Style sheets
 import "leaflet/dist/leaflet.css";
@@ -13,11 +12,10 @@ import "./leafletWorkaround.ts";
 
 // Deterministic random number generator
 import luck from "./luck.ts";
-
 // These all seem like reasonable things to take straight from the example
 
 // Location of our classroom (as identified on Google Maps)
-const OAKES_CLASSROOM: Cell = {
+const OAKES_CLASSROOM: GeoLocation = {
   lat: 36.98949379578401,
   long: -122.06277128548504,
 };
