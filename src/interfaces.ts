@@ -37,7 +37,7 @@ export interface Cache {
 export function createCache(
   index: ArrayIndex,
   maxInitialCoins: number,
-): [Cache, ArrayIndex] { // This function returns both the cache and the index, because the index will be updated
+): Cache {
   const cache: Cache = {
     index,
     coins: [],
@@ -68,7 +68,7 @@ export function createCache(
 
   index.cache = cache;
 
-  return [cache, index];
+  return cache;
 }
 
 // This function generates a coin at a given index, with a unique serial number based on the index
@@ -87,7 +87,7 @@ export function generateCoin(originIndex: ArrayIndex): Coin {
 }
 
 // This cache is the player's inventory
-export const player = createCache({ i: 0, j: 0 }, 0)[0];
+export const player = createCache({ i: 0, j: 0 }, 0);
 
 export const playerDiv = document.getElementById("player")!;
 playerDiv.innerHTML = "You have " + player.coinCount().toString() + " coins";
