@@ -24,6 +24,8 @@ import { Board } from "./board.ts";
 const INITIAL_COINS = 5;
 let playerMarker: leaflet.Marker;
 
+let map: leaflet.Map;
+
 // Wrapper function to create and set up map. Will also add a tile layer to the map.
 export function makeMap(element: HTMLElement, mapConfig: {
   center: GeoLocation;
@@ -33,7 +35,7 @@ export function makeMap(element: HTMLElement, mapConfig: {
   zoomControl: false;
   scrollWheelZoom: false;
 }) {
-  const map = leaflet.map(element, {
+  map = leaflet.map(element, {
     center: leaflet.latLng(mapConfig.center.lat, mapConfig.center.long),
     zoom: mapConfig.zoom,
     minZoom: mapConfig.minZoom,
@@ -54,7 +56,7 @@ export function makeMap(element: HTMLElement, mapConfig: {
 }
 
 // Wrapper function to place a marker for the player on the map at a given location.
-export function placePlayerMarker(map: leaflet.Map, location: GeoLocation) {
+export function placePlayerMarker(location: GeoLocation) {
   playerMarker?.remove();
   playerMarker = leaflet.marker(
     leaflet.latLng(location.lat, location.long),
@@ -65,7 +67,6 @@ export function placePlayerMarker(map: leaflet.Map, location: GeoLocation) {
 
 // Wrapper function to create a marker for a cache on the map at a given location.
 export function placeCache(
-  map: leaflet.Map,
   board: Board,
   index: ArrayIndex,
 ) {
