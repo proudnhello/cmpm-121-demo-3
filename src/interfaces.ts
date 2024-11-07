@@ -11,8 +11,8 @@ export interface GeoLocation {
 }
 
 export interface ArrayIndex {
-  i: number;
-  j: number;
+  readonly i: number;
+  readonly j: number;
 }
 
 // A coin is a unique object that can be deposited in a cache

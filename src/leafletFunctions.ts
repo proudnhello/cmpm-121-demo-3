@@ -22,6 +22,7 @@ import { Board } from "./board.ts";
 
 // The size of a tile in degrees of latitude and longitude
 const INITIAL_COINS = 5;
+let playerMarker: leaflet.Marker;
 
 // Wrapper function to create and set up map. Will also add a tile layer to the map.
 export function makeMap(element: HTMLElement, mapConfig: {
@@ -54,7 +55,8 @@ export function makeMap(element: HTMLElement, mapConfig: {
 
 // Wrapper function to place a marker for the player on the map at a given location.
 export function placePlayerMarker(map: leaflet.Map, location: GeoLocation) {
-  const playerMarker = leaflet.marker(
+  playerMarker?.remove();
+  playerMarker = leaflet.marker(
     leaflet.latLng(location.lat, location.long),
   );
   playerMarker.bindTooltip("You are here!");

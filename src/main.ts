@@ -24,6 +24,8 @@ const OAKES_CLASSROOM: GeoLocation = {
   long: -122.06277128548504,
 };
 
+const playerLocation = OAKES_CLASSROOM;
+
 // Tunable gameplay parameters
 const GAMEPLAY_ZOOM_LEVEL = 19;
 const NEIGHBORHOOD_SIZE = 8;
@@ -43,6 +45,25 @@ const map = leafletFunctions.makeMap(document.getElementById("map")!, {
   zoomControl: false,
   scrollWheelZoom: false,
 });
+
+// Add buttons for movement
+const movementButtons = document.getElementById("movementButtons")!;
+const directions = [
+  { text: "↑", i: 1, j: 0 },
+  { text: "←", i: 0, j: -1 },
+  { text: "↓", i: -1, j: 0 },
+  { text: "→", i: 0, j: 1 },
+];
+for (const direction of directions) {
+  const button = document.createElement("button");
+  button.textContent = direction.text;
+  button.onclick = () => {
+    playerLocation.lat += direction.i * TILE_DEGREES;
+    playerLocation.long += direction.j * TILE_DEGREES;
+    leafletFunctions.placePlayerMarker(map, playerLocation);
+  };
+  movementButtons.appendChild(button);
+}
 
 leafletFunctions.placePlayerMarker(map, OAKES_CLASSROOM);
 
