@@ -73,48 +73,44 @@ export function placeCache(
     GeoBounds[1].lat,
     GeoBounds[1].long,
   ]]);
-  const rect = leaflet.rectangle(bounds);
+  const cacheMapBounds = leaflet.rectangle(bounds);
   const cache = createCache(index, INITIAL_COINS);
 
   // Add a popup to the cache rectangle, with two buttons
-  rect.bindPopup(() => {
-    const popup = document.createElement("div");
-    popup.innerHTML = `
+  cacheMapBounds.bindPopup(() => {
+    const cachePopup = document.createElement("div");
+    cachePopup.innerHTML = `
       <div>There is a cache here at "${index.i},${index.j}". It has ${cache.coinCount()} coins.<br>
       Those coins are: <br> ${cache.coinString()}</div>
       <button id="collect">Collect</button>
       <button id="deposit">Deposit</button>
     `;
     // The collect button will deposit the cache's coins into the player's inventory
-    popup.querySelector<HTMLButtonElement>("#collect")!.addEventListener(
+    cachePopup.querySelector<HTMLButtonElement>("#collect")!.addEventListener(
       "click",
       () => {
-        player.depositCoin(index.cache!.collectCoin());
+        player.depositCoin(cache.collectCoin());
         playerDiv.dispatchEvent(playerUpdateEvent);
-        popup.querySelector<HTMLDivElement>("div")!.innerHTML =
-          `There is a cache here at "${index.i},${index.j}". It has ${
-            index.cache!.coinCount()
-          } coins in total. 
-          Those coins are: <br> ${index.cache!.coinString()}`;
+        cachePopup.querySelector<HTMLDivElement>("div")!.innerHTML =
+          `There is a cache here at "${index.i},${index.j}". It has ${cache.coinCount()} coins in total. 
+          Those coins are: <br> ${cache.coinString()}`;
       },
     );
 
     // The deposit button will deposit the player's coins into the cache
-    popup.querySelector<HTMLButtonElement>("#deposit")!.addEventListener(
+    cachePopup.querySelector<HTMLButtonElement>("#deposit")!.addEventListener(
       "click",
       () => {
-        index.cache!.depositCoin(player.collectCoin());
+        cache.depositCoin(player.collectCoin());
         playerDiv.dispatchEvent(playerUpdateEvent);
-        popup.querySelector<HTMLDivElement>("div")!.innerHTML =
-          `There is a cache here at "${index.i},${index.j}". It has ${
-            index.cache!.coinCount()
-          } coins.
-          Those coins are: <br> ${index.cache!.coinString()}`;
+        cachePopup.querySelector<HTMLDivElement>("div")!.innerHTML =
+          `There is a cache here at "${index.i},${index.j}". It has ${cache.coinCount()} coins.
+          Those coins are: <br> ${cache.coinString()}`;
       },
     );
 
-    return popup;
+    return cachePopup;
   });
 
-  rect.addTo(map);
+  cacheMapBounds.addTo(map);
 }

@@ -13,7 +13,6 @@ export interface GeoLocation {
 export interface ArrayIndex {
   i: number;
   j: number;
-  cache?: Cache; // An array index can have a cache associated with it
 }
 
 // A coin is a unique object that can be deposited in a cache
@@ -61,26 +60,28 @@ export function createCache(
     },
   };
 
-  index.cache = cache;
-
   const coinNum = luck(
     [index.i, index.j, "https://www.youtube.com/watch?v=Jk5L3DRaqjs"]
       .toString(),
   ) * maxInitialCoins; // This formatting is attrocious, but it's what deno fmt believes is correct
 
   for (let i = 0; i < coinNum; i++) {
-    cache.depositCoin(generateCoin(index));
+    cache.depositCoin(generateCoin(index, cache, i));
   }
 
   return cache;
 }
 
 // This function generates a coin at a given index, with a unique serial number based on the index
-export function generateCoin(originIndex: ArrayIndex): Coin {
+export function generateCoin(
+  originIndex: ArrayIndex,
+  cache: Cache,
+  serialNumber: number,
+): Coin {
   return {
     originIndex,
-    serial: originIndex.cache!.coinCount().toString(),
-    owner: originIndex.cache!,
+    owner: cache,
+    serial: serialNumber.toString(),
     toString() {
       return `Coin from (${originIndex.i}, ${originIndex.j}), serial: ${this.serial}`;
     },
