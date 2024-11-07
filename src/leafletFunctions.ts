@@ -80,7 +80,8 @@ export function placeCache(
   rect.bindPopup(() => {
     const popup = document.createElement("div");
     popup.innerHTML = `
-      <div>There is a cache here at "${index.i},${index.j}". It has ${cache.coinCount()} coins.</div>
+      <div>There is a cache here at "${index.i},${index.j}". It has ${cache.coinCount()} coins.<br>
+      Those coins are: <br> ${cache.coinString()}</div>
       <button id="collect">Collect</button>
       <button id="deposit">Deposit</button>
     `;
@@ -93,7 +94,8 @@ export function placeCache(
         popup.querySelector<HTMLDivElement>("div")!.innerHTML =
           `There is a cache here at "${index.i},${index.j}". It has ${
             index.cache!.coinCount()
-          } coins.`;
+          } coins in total. 
+          Those coins are: <br> ${index.cache!.coinString()}`;
       },
     );
 
@@ -106,7 +108,8 @@ export function placeCache(
         popup.querySelector<HTMLDivElement>("div")!.innerHTML =
           `There is a cache here at "${index.i},${index.j}". It has ${
             index.cache!.coinCount()
-          } coins.`;
+          } coins.
+          Those coins are: <br> ${index.cache!.coinString()}`;
       },
     );
 
