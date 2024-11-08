@@ -102,8 +102,6 @@ export class Board {
   clearBoard() {
     // Iterate over the active caches and make them momentos
     this.activeCaches.forEach((cache, index) => {
-      const momento = cache.toMomento();
-      console.log(momento);
       this.cacheMomentos.set(index, cache.toMomento());
     });
     // Clear the map of all markers

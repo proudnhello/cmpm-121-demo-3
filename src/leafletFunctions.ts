@@ -138,6 +138,11 @@ export function clearMap() {
   }
 }
 
+// Wrapper function to center the map on a given location
+export function centerOnPoint(location: GeoLocation) {
+  map.setView(leaflet.latLng(location.lat, location.long));
+}
+
 function updateCachePopup(
   popup: HTMLDivElement,
   cache: Cache,

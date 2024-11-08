@@ -75,7 +75,6 @@ export function createCache(
     },
     toMomento() {
       // We don't need to store the index, as we know it from the cache's location
-      console.log(JSON.stringify({ coins: this.coins }));
       return JSON.stringify(this);
     },
     fromMomento(momento: string) {
