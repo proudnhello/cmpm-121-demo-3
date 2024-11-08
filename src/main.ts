@@ -13,13 +13,49 @@ import "./style.css";
 import "./leafletWorkaround.ts";
 
 // Location of our classroom (as identified on Google Maps)
-const OAKES_CLASSROOM: GeoLocation = {
+const _OAKES_CLASSROOM: GeoLocation = {
   lat: 36.98949379578401,
   long: -122.06277128548504,
 };
 
-// Initial player location
-const playerLocation = OAKES_CLASSROOM;
+const playerLocation: GeoLocation = _OAKES_CLASSROOM;
+
+// Get the current location of the player
+function getCurrentLocation(): Promise<{ lat: number; long: number }> {
+  return new Promise((resolve, reject) => {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          resolve({
+            lat: position.coords.latitude,
+            long: position.coords.longitude,
+          });
+        },
+        () => {
+          reject("Unable to get current location");
+        },
+      );
+    } else {
+      reject("Geolocation is not supported by this browser");
+    }
+  });
+}
+
+// Set the player's location to the current location if possible
+async function setPlayerLocation() {
+  try {
+    const location = await getCurrentLocation();
+    playerLocation.lat = location.lat;
+    playerLocation.long = location.long;
+    console.log("Got current location.");
+  } catch (error) {
+    console.error(error);
+    console.log("Using default location.");
+  }
+}
+
+await setPlayerLocation();
+
 // Tunable gameplay parameters
 const NEIGHBORHOOD_SIZE = 8;
 const TILE_DEGREES = 1e-4;
