@@ -1,7 +1,7 @@
 // Hopefully, no need to import leaflet, as all the functions are exported from leafletFunctions.ts
 import * as leafletFunctions from "./leafletFunctions.ts";
 
-import { type ArrayIndex, GeoLocation } from "./interfaces.ts";
+import { type ArrayIndex, createCache, GeoLocation } from "./interfaces.ts";
 
 import { Board } from "./board.ts";
 
@@ -20,12 +20,34 @@ const _OAKES_CLASSROOM: GeoLocation = {
 
 const playerLocation: GeoLocation = _OAKES_CLASSROOM;
 
+// This cache is the player's inventory
+const playerCache = createCache({ i: 0, j: 0 }, 0);
+
+const playerDiv = document.getElementById("player")!;
+playerDiv.innerHTML = "You have " + playerCache.coinCount().toString() +
+  " coins.<br>They are:<br> " + playerCache.coinString();
+
+// This event is used to update the player's inventory display
+export const playerUpdateEvent = new Event("player-update");
+
+playerDiv.addEventListener("player-update", () => {
+  playerDiv.innerHTML = "You have " + playerCache.coinCount().toString() +
+    " coins<br>They are:<br> " + playerCache.coinString();
+});
+
+const player = {
+  cache: playerCache,
+  div: playerDiv,
+  updateEvent: playerUpdateEvent,
+  location: playerLocation,
+};
+
 // Update the player's location on the map, and relevant bookkeeping
 function updatePlayerPosition(location: GeoLocation) {
   playerLocation.lat = location.lat;
   playerLocation.long = location.long;
   leafletFunctions.placePlayerMarker(playerLocation);
-  board.drawBoard(playerLocation);
+  board.drawBoard(player);
 }
 
 // Tunable gameplay parameters
@@ -57,11 +79,6 @@ for (const direction of directions) {
   };
   movementButtons.appendChild(button);
 }
-
-board.loadState();
-
-// Create the initial board
-board.drawBoard(playerLocation);
 
 // Add a button to allow for automatic movement based on the player's location
 const realLifeMovementButton = document.createElement("button");
@@ -141,8 +158,19 @@ movementButtons.appendChild(realLifeMovementButton);
 
 // Add a button to clear the state of the board
 const clearStateButton = document.createElement("button");
-clearStateButton.textContent = "Clear State";
+clearStateButton.textContent = "🚮";
 clearStateButton.onclick = () => {
-  board.resetState();
+  if (
+    prompt("Are you sure you want to clear the state? Type yes to confirm.")!
+      .toLowerCase() === "yes"
+  ) {
+    board.resetState();
+    location.reload(); // Reload the page to stop the player from adding more state
+  }
 };
 movementButtons.appendChild(clearStateButton);
+
+board.loadState(player);
+
+// Create the initial board
+board.drawBoard(player);

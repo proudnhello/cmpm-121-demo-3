@@ -4,13 +4,7 @@ import leaflet, { latLng } from "leaflet";
 // Fix missing marker images
 import "./leafletWorkaround.ts";
 
-import {
-  Cache,
-  GeoLocation,
-  player,
-  playerDiv,
-  playerUpdateEvent,
-} from "./interfaces.ts";
+import { Cache, GeoLocation, type Player } from "./interfaces.ts";
 
 import { Board } from "./board.ts";
 
@@ -80,7 +74,11 @@ export function resetPolyline() {
 export function placeCache(
   board: Board,
   cache: Cache,
+  player: Player,
 ) {
+  const playerCache = player.cache;
+  const playerDiv = player.div;
+  const playerUpdateEvent = player.updateEvent;
   const index = cache.index;
   const GeoBounds = board.getCellBounds(index);
   // Convert the GeoLocation bounds to LatLngExpression bounds
@@ -109,7 +107,7 @@ export function placeCache(
     cachePopup.querySelector<HTMLButtonElement>("#collect")!.addEventListener(
       "click",
       () => {
-        player.depositCoin(cache.collectCoin());
+        playerCache.depositCoin(cache.collectCoin());
         playerDiv.dispatchEvent(playerUpdateEvent);
         updateCachePopup(
           cachePopup.querySelector<HTMLDivElement>("div")!,
@@ -123,7 +121,7 @@ export function placeCache(
     cachePopup.querySelector<HTMLButtonElement>("#deposit")!.addEventListener(
       "click",
       () => {
-        cache.depositCoin(player.collectCoin());
+        cache.depositCoin(playerCache.collectCoin());
         playerDiv.dispatchEvent(playerUpdateEvent);
         updateCachePopup(
           cachePopup.querySelector<HTMLDivElement>("div")!,

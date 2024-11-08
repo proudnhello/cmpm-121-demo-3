@@ -3,7 +3,7 @@ import {
   Cache,
   createCache,
   GeoLocation,
-  player,
+  Player,
 } from "./interfaces.ts";
 import * as leafletFunctions from "./leafletFunctions.ts";
 import luck from "./luck.ts";
@@ -109,45 +109,49 @@ export class Board {
     leafletFunctions.clearMap();
   }
 
-  saveState(playerLocation: GeoLocation) {
+  // Save the current state of the board to local storage
+  saveState(player: Player) {
+    const playerLocation = player.location;
+    const playerCache = player.cache;
     localStorage.setItem(
       "mapState",
       JSON.stringify({
         playerLocation,
         cacheMomentos: Array.from(this.cacheMomentos.entries()),
-        playerCoins: player.coins,
+        playerCoins: playerCache.coins,
       }),
     );
   }
 
-  loadState(): GeoLocation {
+  // Load the state of the board from local storage
+  loadState(player: Player): GeoLocation {
     const state = JSON.parse(localStorage.getItem("mapState")!);
-    this.resetState();
     if (!state) {
       // An impossible location, to signal that the state was not loaded
       return { lat: 200, long: 200 };
     }
-    console.log(state);
     this.cacheMomentos = new Map();
     for (const momento of state.cacheMomentos) {
       const key: { i: number; j: number } = momento[0];
       this.cacheMomentos.set(this.getCannonicalLocation(key), momento[1]);
       this;
     }
-    player.fromMomento(state.playerCoins);
-    this.drawBoard({
-      lat: state.playerLocation.lat,
-      long: state.playerLocation.long,
-    });
+    // From momento requires an unparsed object, so stupidly, we parse state.playerCoins back into json
+    player.cache.fromMomento(JSON.stringify(state.playerCoins));
+    player.location.lat = state.playerLocation.lat;
+    player.location.long = state.playerLocation.long;
+    this.drawBoard(player);
     return { lat: state.playerLocation.lat, long: state.playerLocation.long };
   }
 
+  // Remove any state saved in local storage, then quickly reload the page before the foolish user can add more
   resetState() {
     localStorage.removeItem("mapState");
   }
 
-  drawBoard(playerLocation: GeoLocation) {
-    this.saveState(playerLocation);
+  drawBoard(player: Player) {
+    const playerLocation = player.location;
+    this.saveState(player);
     this.clearBoard();
     // Place the player marker on the map
     leafletFunctions.placePlayerMarker(playerLocation);
@@ -166,7 +170,7 @@ export class Board {
             cache = createCache(cell, INITIAL_COINS);
           }
           this.activeCaches.set(cell, cache);
-          leafletFunctions.placeCache(this, cache);
+          leafletFunctions.placeCache(this, cache, player);
         }
       },
     );

@@ -31,7 +31,8 @@ export function generateCoin(
     originIndex,
     serial: serialNumber.toString(),
     toString() {
-      return `Coin from (${originIndex.i}, ${originIndex.j}), serial: ${this.serial}`;
+      console.log("originIndex", this.originIndex);
+      return `Coin from (${this.originIndex.i}, ${this.originIndex.j}), serial: ${this.serial}`;
     },
   };
 }
@@ -71,27 +72,37 @@ export function createCache(
       return this.coins.length;
     },
     coinString() {
-      return this.coins.map((coin) => coin.toString()).join("<br>");
+      let coinString = "";
+      for (const coin of this.coins) {
+        coinString += coin.toString() + "<br>";
+      }
+      console.log(this.coins[0]!);
+      if (this.coins[0]) {
+        console.log(this.coins[0]!.toString());
+      }
+      return coinString;
     },
     toMomento() {
       // We don't need to store the index, as we know it from the cache's location
-      return JSON.stringify(this);
+      return JSON.stringify(this.coins);
     },
     fromMomento(momento: string) {
       if (!momento) {
         return;
       }
-      let parsed: { coins: { serial: string; originIndex: ArrayIndex }[] };
+      let parsed: { serial: string; originIndex: ArrayIndex }[];
       try {
         parsed = JSON.parse(momento);
       } catch {
+        console.log("Failed to parse momento");
         return;
       }
       // JSON.parse won't create Coin objects, so we need to do that manually
-      for (const sequencedCoin of parsed.coins) {
+      for (const sequencedCoin of parsed) {
         const coin = generateCoin(index, 0);
         coin.serial = sequencedCoin.serial;
         coin.originIndex = sequencedCoin.originIndex;
+
         this.depositCoin(coin);
       }
     },
@@ -109,17 +120,9 @@ export function createCache(
   return cache;
 }
 
-// This cache is the player's inventory
-export const player = createCache({ i: 0, j: 0 }, 0);
-
-export const playerDiv = document.getElementById("player")!;
-playerDiv.innerHTML = "You have " + player.coinCount().toString() +
-  " coins.<br>They are:<br> " + player.coinString();
-
-// This event is used to update the player's inventory display
-export const playerUpdateEvent = new Event("player-update");
-
-playerDiv.addEventListener("player-update", () => {
-  playerDiv.innerHTML = "You have " + player.coinCount().toString() +
-    " coins<br>They are:<br> " + player.coinString();
-});
+export interface Player {
+  cache: Cache;
+  div: HTMLElement;
+  updateEvent: Event;
+  location: GeoLocation;
+}
