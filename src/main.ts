@@ -1,7 +1,7 @@
 // Hopefully, no need to import leaflet, as all the functions are exported from leafletFunctions.ts
 import * as leafletFunctions from "./leafletFunctions.ts";
 
-import { GeoLocation } from "./interfaces.ts";
+import { type ArrayIndex, GeoLocation } from "./interfaces.ts";
 
 import { Board } from "./board.ts";
 
@@ -31,6 +31,8 @@ function updatePlayerPosition(location: GeoLocation) {
 const NEIGHBORHOOD_SIZE = 8;
 const TILE_DEGREES = 1e-4;
 const board = new Board(TILE_DEGREES, NEIGHBORHOOD_SIZE, playerLocation);
+// Get the index of the player's location. This will be used to determine if the player's position change is worth updating the board
+let playerIndex: ArrayIndex = board.getCellForPoint(playerLocation);
 
 // Define movement buttons based on their directions
 const movementButtons = document.getElementById("movementButtons")!;
@@ -104,10 +106,26 @@ realLifeMovementButton.onclick = async () => {
   }
   await setPlayerLocation();
   navigator.geolocation.watchPosition((position) => {
-    updatePlayerPosition({
-      lat: position.coords.latitude,
-      long: position.coords.longitude,
-    });
+    const currentPlayerIndex = board.getCellForPoint(playerLocation);
+    // Only update the board if the player has moved to a new tile
+    // updatePlayerPosition will update the player's location and redraw the board, while placePlayerMarker will only update the player's marker
+    if (
+      currentPlayerIndex.i !== playerIndex.i ||
+      currentPlayerIndex.j !== playerIndex.j
+    ) {
+      // Update the player's location and redraw the board
+      playerIndex = currentPlayerIndex;
+      updatePlayerPosition({
+        lat: position.coords.latitude,
+        long: position.coords.longitude,
+      });
+    } else {
+      // Update the player's location
+      leafletFunctions.placePlayerMarker({
+        lat: position.coords.latitude,
+        long: position.coords.longitude,
+      });
+    }
   }, () => {
     alert("Unable to get current location");
   });
