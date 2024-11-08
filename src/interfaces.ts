@@ -22,6 +22,20 @@ export interface Coin {
   toString(): string;
 }
 
+// This function generates a coin at a given index, with a unique serial number
+export function generateCoin(
+  originIndex: ArrayIndex,
+  serialNumber: number,
+): Coin {
+  return {
+    originIndex,
+    serial: serialNumber.toString(),
+    toString() {
+      return `Coin from (${originIndex.i}, ${originIndex.j}), serial: ${this.serial}`;
+    },
+  };
+}
+
 // A cache is a location where coins can be deposited and collected
 export interface Cache {
   index: ArrayIndex;
@@ -86,20 +100,6 @@ export function createCache(
   }
 
   return cache;
-}
-
-// This function generates a coin at a given index, with a unique serial number
-export function generateCoin(
-  originIndex: ArrayIndex,
-  serialNumber: number,
-): Coin {
-  return {
-    originIndex,
-    serial: serialNumber.toString(),
-    toString() {
-      return `Coin from (${originIndex.i}, ${originIndex.j}), serial: ${this.serial}`;
-    },
-  };
 }
 
 // This cache is the player's inventory
