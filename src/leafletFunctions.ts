@@ -140,6 +140,16 @@ export function placeCache(
   cacheMarkers.push(cacheMapBounds);
 }
 
+function updateCachePopup(
+  popup: HTMLDivElement,
+  cache: Cache,
+  index: { i: number; j: number },
+) {
+  popup.innerHTML = `
+    There is a cache here at "${index.i},${index.j}". It has ${cache.coinCount()} coins.<br>
+    Those coins are: <br> ${cache.coinString()}`;
+}
+
 // Wrapper function to clear all cache markers from the map
 export function clearMap() {
   for (const marker of cacheMarkers) {
@@ -150,14 +160,4 @@ export function clearMap() {
 // Wrapper function to center the map on a given location
 export function centerOnPoint(location: GeoLocation) {
   map.setView(leaflet.latLng(location.lat, location.long));
-}
-
-function updateCachePopup(
-  popup: HTMLDivElement,
-  cache: Cache,
-  index: { i: number; j: number },
-) {
-  popup.innerHTML = `
-    There is a cache here at "${index.i},${index.j}". It has ${cache.coinCount()} coins.<br>
-    Those coins are: <br> ${cache.coinString()}`;
 }

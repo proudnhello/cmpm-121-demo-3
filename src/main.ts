@@ -58,6 +58,8 @@ for (const direction of directions) {
   movementButtons.appendChild(button);
 }
 
+board.loadState();
+
 // Create the initial board
 board.drawBoard(playerLocation);
 
@@ -136,3 +138,11 @@ realLifeMovementButton.onclick = async () => {
 };
 
 movementButtons.appendChild(realLifeMovementButton);
+
+// Add a button to clear the state of the board
+const clearStateButton = document.createElement("button");
+clearStateButton.textContent = "Clear State";
+clearStateButton.onclick = () => {
+  board.resetState();
+};
+movementButtons.appendChild(clearStateButton);

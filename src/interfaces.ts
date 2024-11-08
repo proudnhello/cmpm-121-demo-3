@@ -78,7 +78,15 @@ export function createCache(
       return JSON.stringify(this);
     },
     fromMomento(momento: string) {
-      const parsed = JSON.parse(momento);
+      if (!momento) {
+        return;
+      }
+      let parsed: { coins: { serial: string; originIndex: ArrayIndex }[] };
+      try {
+        parsed = JSON.parse(momento);
+      } catch {
+        return;
+      }
       // JSON.parse won't create Coin objects, so we need to do that manually
       for (const sequencedCoin of parsed.coins) {
         const coin = generateCoin(index, 0);

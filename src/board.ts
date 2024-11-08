@@ -3,6 +3,7 @@ import {
   Cache,
   createCache,
   GeoLocation,
+  player,
 } from "./interfaces.ts";
 import * as leafletFunctions from "./leafletFunctions.ts";
 import luck from "./luck.ts";
@@ -22,8 +23,8 @@ export class Board {
   private readonly knownLocations: Map<string, ArrayIndex>;
 
   // Caches for caches that are currently active, and for momentos of caches that have been visited but are not currently active
-  private readonly activeCaches: Map<ArrayIndex, Cache>;
-  private readonly cacheMomentos: Map<ArrayIndex, string>;
+  private activeCaches: Map<ArrayIndex, Cache>;
+  private cacheMomentos: Map<ArrayIndex, string>;
 
   constructor(
     tileWidth: number,
@@ -108,7 +109,45 @@ export class Board {
     leafletFunctions.clearMap();
   }
 
+  saveState(playerLocation: GeoLocation) {
+    localStorage.setItem(
+      "mapState",
+      JSON.stringify({
+        playerLocation,
+        cacheMomentos: Array.from(this.cacheMomentos.entries()),
+        playerCoins: player.coins,
+      }),
+    );
+  }
+
+  loadState(): GeoLocation {
+    const state = JSON.parse(localStorage.getItem("mapState")!);
+    this.resetState();
+    if (!state) {
+      // An impossible location, to signal that the state was not loaded
+      return { lat: 200, long: 200 };
+    }
+    console.log(state);
+    this.cacheMomentos = new Map();
+    for (const momento of state.cacheMomentos) {
+      const key: { i: number; j: number } = momento[0];
+      this.cacheMomentos.set(this.getCannonicalLocation(key), momento[1]);
+      this;
+    }
+    player.fromMomento(state.playerCoins);
+    this.drawBoard({
+      lat: state.playerLocation.lat,
+      long: state.playerLocation.long,
+    });
+    return { lat: state.playerLocation.lat, long: state.playerLocation.long };
+  }
+
+  resetState() {
+    localStorage.removeItem("mapState");
+  }
+
   drawBoard(playerLocation: GeoLocation) {
+    this.saveState(playerLocation);
     this.clearBoard();
     // Place the player marker on the map
     leafletFunctions.placePlayerMarker(playerLocation);
