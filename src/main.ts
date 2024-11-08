@@ -120,7 +120,9 @@ realLifeMovementButton.onclick = async () => {
         long: position.coords.longitude,
       });
     } else {
-      // Update the player's location
+      // Update the player's marker
+      playerLocation.lat = position.coords.latitude;
+      playerLocation.long = position.coords.longitude;
       leafletFunctions.placePlayerMarker({
         lat: position.coords.latitude,
         long: position.coords.longitude,
