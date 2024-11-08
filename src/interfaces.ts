@@ -2,6 +2,10 @@
 
 import luck from "./luck.ts";
 
+import { Board } from "./board.ts";
+
+import * as leafletFunctions from "./leafletFunctions.ts";
+
 // The idea for these interfaces is that they should be able to be used to represent a point on the map in two different ways:
 // 1. As a latitude and longitude
 // 2. As an array index representing a cell in the grid
@@ -19,7 +23,7 @@ export interface ArrayIndex {
 export interface Coin {
   serial: string;
   originIndex: ArrayIndex;
-  toString(): string;
+  toButton(board: Board): HTMLButtonElement;
 }
 
 // This function generates a coin at a given index, with a unique serial number
@@ -30,8 +34,15 @@ export function generateCoin(
   return {
     originIndex,
     serial: serialNumber.toString(),
-    toString() {
-      return `Coin from (${this.originIndex.i}, ${this.originIndex.j}), serial: ${this.serial}`;
+    toButton(board: Board) {
+      const text =
+        `Coin from (${this.originIndex.i}, ${this.originIndex.j}), serial: ${this.serial}`;
+      const button = document.createElement("button");
+      button.textContent = text;
+      button.onclick = () => {
+        leafletFunctions.centerOnPoint(board.getPointForCell(this.originIndex));
+      };
+      return button;
     },
   };
 }
@@ -44,7 +55,7 @@ export interface Cache {
   depositCoin(coin: Coin): void;
   collectCoin(): Coin;
   coinCount(): number;
-  coinString(): string;
+  coinButtons(board: Board): HTMLButtonElement[];
 
   toMomento(): string;
   fromMomento(momento: string): void;
@@ -70,12 +81,12 @@ export function createCache(
     coinCount() {
       return this.coins.length;
     },
-    coinString() {
-      let coinString = "";
+    coinButtons(board: Board) {
+      const coinButtons = [];
       for (const coin of this.coins) {
-        coinString += coin.toString() + "<br>";
+        coinButtons.push(coin.toButton(board));
       }
-      return coinString;
+      return coinButtons;
     },
     toMomento() {
       // We don't need to store the index, as we know it from the cache's location

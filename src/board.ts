@@ -66,6 +66,13 @@ export class Board {
     return this.getCannonicalLocation({ i, j });
   }
 
+  getPointForCell(location: ArrayIndex): GeoLocation {
+    return {
+      lat: location.i * this.tileWidth + this.tileWidth / 2,
+      long: location.j * this.tileWidth + this.tileWidth / 2,
+    };
+  }
+
   // Returns the bounds of the tile at the given array index
   // The bounds are represented as an array of two GeoLocations, in the order top left, bottom right
   // (same as the leaflet latLngBounds constructor)
@@ -111,6 +118,8 @@ export class Board {
   clearBoard() {
     // Iterate over the active caches and make them momentos
     this.setCacheMomentos();
+    // Clear the active caches
+    this.activeCaches = new Map();
     // Clear the map of all markers
     leafletFunctions.clearMap();
   }

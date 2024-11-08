@@ -24,15 +24,17 @@ const playerLocation: GeoLocation = _OAKES_CLASSROOM;
 const playerCache = createCache({ i: 0, j: 0 }, 0);
 
 const playerDiv = document.getElementById("player")!;
-playerDiv.innerHTML = "You have " + playerCache.coinCount().toString() +
-  " coins.<br>They are:<br> " + playerCache.coinString();
 
 // This event is used to update the player's inventory display
 export const playerUpdateEvent = new Event("player-update");
 
 playerDiv.addEventListener("player-update", () => {
   playerDiv.innerHTML = "You have " + playerCache.coinCount().toString() +
-    " coins<br>They are:<br> " + playerCache.coinString();
+    " coins<br>They are:<br> ";
+  const buttons = player.cache.coinButtons(board);
+  for (const button of buttons) {
+    playerDiv.appendChild(button);
+  }
 });
 
 const player = {
@@ -44,18 +46,18 @@ const player = {
 
 // Update the player's location on the map, and relevant bookkeeping
 function updatePlayerPosition(location: GeoLocation) {
-  playerLocation.lat = location.lat;
-  playerLocation.long = location.long;
-  leafletFunctions.placePlayerMarker(playerLocation);
+  player.location.lat = location.lat;
+  player.location.long = location.long;
+  leafletFunctions.placePlayerMarker(player.location);
   board.drawBoard(player);
 }
 
 // Tunable gameplay parameters
 const NEIGHBORHOOD_SIZE = 8;
 const TILE_DEGREES = 1e-4;
-const board = new Board(TILE_DEGREES, NEIGHBORHOOD_SIZE, playerLocation);
+const board = new Board(TILE_DEGREES, NEIGHBORHOOD_SIZE, player.location);
 // Get the index of the player's location. This will be used to determine if the player's position change is worth updating the board
-let playerIndex: ArrayIndex = board.getCellForPoint(playerLocation);
+let playerIndex: ArrayIndex = board.getCellForPoint(player.location);
 
 // Define movement buttons based on their directions
 const movementButtons = document.getElementById("movementButtons")!;
@@ -73,8 +75,8 @@ for (const direction of directions) {
   button.onclick = () => {
     // Increase the player's location by the direction
     updatePlayerPosition({
-      lat: playerLocation.lat + direction.i * TILE_DEGREES,
-      long: playerLocation.long + direction.j * TILE_DEGREES,
+      lat: player.location.lat + direction.i * TILE_DEGREES,
+      long: player.location.long + direction.j * TILE_DEGREES,
     });
   };
   movementButtons.appendChild(button);
@@ -127,7 +129,7 @@ realLifeMovementButton.onclick = async () => {
   }
   await setPlayerLocation();
   navigator.geolocation.watchPosition((position) => {
-    const currentPlayerIndex = board.getCellForPoint(playerLocation);
+    const currentPlayerIndex = board.getCellForPoint(player.location);
     // Only update the board if the player has moved to a new tile
     // updatePlayerPosition will update the player's location and redraw the board, while placePlayerMarker will only update the player's marker
     if (
@@ -142,8 +144,8 @@ realLifeMovementButton.onclick = async () => {
       });
     } else {
       // Update the player's marker
-      playerLocation.lat = position.coords.latitude;
-      playerLocation.long = position.coords.longitude;
+      player.location.lat = position.coords.latitude;
+      player.location.long = position.coords.longitude;
       leafletFunctions.placePlayerMarker({
         lat: position.coords.latitude,
         long: position.coords.longitude,
@@ -169,6 +171,14 @@ clearStateButton.onclick = () => {
   }
 };
 movementButtons.appendChild(clearStateButton);
+
+// Add a button to center the view on the player
+const centerButton = document.createElement("button");
+centerButton.textContent = "🎯";
+centerButton.onclick = () => {
+  leafletFunctions.centerOnPoint(player.location);
+};
+movementButtons.appendChild(centerButton);
 
 board.loadState(player);
 playerDiv.dispatchEvent(playerUpdateEvent);

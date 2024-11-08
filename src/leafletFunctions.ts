@@ -135,7 +135,7 @@ export function placeCache(
     const cachePopup = document.createElement("div");
     cachePopup.innerHTML = `
       <div>There is a cache here at "${index.i},${index.j}". It has ${cache.coinCount()} coins.<br>
-      Those coins are: <br> ${cache.coinString()}</div>
+      Those coins are: <br> </div>
       <button id="collect">Collect</button>
       <button id="deposit">Deposit</button>
     `;
@@ -148,7 +148,7 @@ export function placeCache(
         updateCachePopup(
           cachePopup.querySelector<HTMLDivElement>("div")!,
           cache,
-          cache.index,
+          board,
         )!;
         board.saveState(player);
       },
@@ -163,12 +163,17 @@ export function placeCache(
         updateCachePopup(
           cachePopup.querySelector<HTMLDivElement>("div")!,
           cache,
-          cache.index,
+          board,
         )!;
         board.saveState(player);
       },
     );
 
+    updateCachePopup(
+      cachePopup.querySelector<HTMLDivElement>("div")!,
+      cache,
+      board,
+    );
     return cachePopup;
   });
 
@@ -179,11 +184,14 @@ export function placeCache(
 function updateCachePopup(
   popup: HTMLDivElement,
   cache: Cache,
-  index: { i: number; j: number },
+  board: Board,
 ) {
   popup.innerHTML = `
-    There is a cache here at "${index.i},${index.j}". It has ${cache.coinCount()} coins.<br>
-    Those coins are: <br> ${cache.coinString()}`;
+    There is a cache here at "${cache.index.i},${cache.index.j}". It has ${cache.coinCount()} coins.<br>
+    Those coins are: <br>`;
+  for (const button of cache.coinButtons(board)) {
+    popup.appendChild(button);
+  }
 }
 
 // Wrapper function to clear all cache markers from the map
