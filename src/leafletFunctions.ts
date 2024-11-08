@@ -1,5 +1,5 @@
 // @deno-types="npm:@types/leaflet@^1.9.14"
-import leaflet from "leaflet";
+import leaflet, { latLng } from "leaflet";
 
 // Fix missing marker images
 import "./leafletWorkaround.ts";
@@ -25,6 +25,8 @@ let playerMarker: leaflet.Marker;
 // The map object used throughout the game
 let map: leaflet.Map;
 
+let polyline: leaflet.Polyline;
+
 // An array of cache markers on the map
 const cacheMarkers: leaflet.Rectangle[] = [];
 
@@ -46,6 +48,8 @@ export function makeMap(element: HTMLElement, mapConfig: {
     scrollWheelZoom: mapConfig.scrollWheelZoom,
   });
 
+  polyline = leaflet.polyline([], { color: "red" }).addTo(map);
+
   leaflet
     .tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
       maxZoom: 19,
@@ -60,11 +64,16 @@ export function makeMap(element: HTMLElement, mapConfig: {
 // Wrapper function to place a marker for the player on the map at a given location.
 export function placePlayerMarker(location: GeoLocation) {
   playerMarker?.remove();
+  polyline.addLatLng(latLng(location.lat, location.long));
   playerMarker = leaflet.marker(
     leaflet.latLng(location.lat, location.long),
   );
   playerMarker.bindTooltip("You are here!");
   playerMarker.addTo(map);
+}
+
+export function resetPolyline() {
+  polyline.setLatLngs([]);
 }
 
 // Wrapper function to create a marker for a cache on the map at a given location.

@@ -20,6 +20,7 @@ const _OAKES_CLASSROOM: GeoLocation = {
 
 const playerLocation: GeoLocation = _OAKES_CLASSROOM;
 
+// Update the player's location on the map, and relevant bookkeeping
 function updatePlayerPosition(location: GeoLocation) {
   playerLocation.lat = location.lat;
   playerLocation.long = location.long;
@@ -90,6 +91,7 @@ function getCurrentLocation(): Promise<{ lat: number; long: number }> {
 async function setPlayerLocation() {
   try {
     const location = await getCurrentLocation();
+    leafletFunctions.resetPolyline();
     updatePlayerPosition(location);
     leafletFunctions.centerOnPoint(location);
     console.log("Got current location.");
