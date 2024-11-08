@@ -5,8 +5,7 @@ import leaflet from "leaflet";
 import "./leafletWorkaround.ts";
 
 import {
-  ArrayIndex,
-  createCache,
+  Cache,
   GeoLocation,
   player,
   playerDiv,
@@ -21,10 +20,13 @@ import { Board } from "./board.ts";
 // Will be largely useless and redundant if we never actually swap out leaflet.
 
 // The size of a tile in degrees of latitude and longitude
-const INITIAL_COINS = 5;
 let playerMarker: leaflet.Marker;
 
+// The map object
 let map: leaflet.Map;
+
+// An array of cache markers on the map
+const cacheMarkers: leaflet.Rectangle[] = [];
 
 // Wrapper function to create and set up map. Will also add a tile layer to the map.
 export function makeMap(element: HTMLElement, mapConfig: {
@@ -68,8 +70,9 @@ export function placePlayerMarker(location: GeoLocation) {
 // Wrapper function to create a marker for a cache on the map at a given location.
 export function placeCache(
   board: Board,
-  index: ArrayIndex,
+  cache: Cache,
 ) {
+  const index = cache.index;
   const GeoBounds = board.getCellBounds(index);
   // Convert the GeoLocation bounds to LatLngExpression bounds
   const bounds = leaflet.latLngBounds([[GeoBounds[0].lat, GeoBounds[0].long], [
@@ -77,7 +80,6 @@ export function placeCache(
     GeoBounds[1].long,
   ]]);
   const cacheMapBounds = leaflet.rectangle(bounds);
-  const cache = createCache(index, INITIAL_COINS);
 
   // Add a popup to the cache rectangle, with two buttons
   cacheMapBounds.bindPopup(() => {
@@ -116,4 +118,12 @@ export function placeCache(
   });
 
   cacheMapBounds.addTo(map);
+  cacheMarkers.push(cacheMapBounds);
+}
+
+// Wrapper function to clear all cache markers from the map
+export function clearMap() {
+  for (const marker of cacheMarkers) {
+    marker.remove();
+  }
 }

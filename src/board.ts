@@ -1,10 +1,16 @@
-import { type ArrayIndex, Cache, GeoLocation } from "./interfaces.ts";
+import {
+  type ArrayIndex,
+  Cache,
+  createCache,
+  GeoLocation,
+} from "./interfaces.ts";
 import * as leafletFunctions from "./leafletFunctions.ts";
 import luck from "./luck.ts";
 const CACHE_SPAWN_PROBABILITY = 0.1;
 const SEED =
   "In the beginning, the universe was created. This has made a lot of people very angry and been widely regarded as a bad move.";
 const GAMEPLAY_ZOOM_LEVEL = 19;
+const INITIAL_COINS = 5;
 
 // The board class represents the game board, which is a grid of tiles.
 // Uses a flyweight pattern to store known locations, to avoid creating multiple objects for the same location.
@@ -16,7 +22,7 @@ export class Board {
 
   // Caches for tiles that are currently active, and for tiles that have been visited but are not currently active
   private readonly activeCaches: Map<ArrayIndex, Cache>;
-  private readonly cacheMomentos: Map<ArrayIndex, Cache>;
+  private readonly cacheMomentos: Map<ArrayIndex, string>;
 
   constructor(
     tileWidth: number,
@@ -74,7 +80,9 @@ export class Board {
   getVisibleCells(location: ArrayIndex): ArrayIndex[] {
     const { i, j } = location;
     const visibleCells: ArrayIndex[] = [];
+    // Iterate over the square of side length 2 * tileVisibilityRadius + 1 centered at the given location, and add each cell to the list
     for (
+      // Why deno. Why must for loops be formatted like this?
       let di = -this.tileVisibilityRadius;
       di <= this.tileVisibilityRadius;
       di++
@@ -90,14 +98,37 @@ export class Board {
     return visibleCells;
   }
 
+  clearBoard() {
+    // Iterate over the active caches and make them momentos
+    this.activeCaches.forEach((cache, index) => {
+      const momento = cache.toMomento();
+      console.log(momento);
+      this.cacheMomentos.set(index, cache.toMomento());
+    });
+    // Clear the map of all markers
+    leafletFunctions.clearMap();
+  }
+
   drawBoard(playerLocation: GeoLocation) {
+    this.clearBoard();
+    // Place the player marker on the map
     leafletFunctions.placePlayerMarker(playerLocation);
 
-    // Add caches to the map by cell numbers, using the luck function to determine if a cache should be placed
+    // Iterate over the visible cells and draw them
     this.getVisibleCells(this.getCellForPoint(playerLocation)).forEach(
       (cell) => {
+        // luck is deterministic, so for the same cell, the same value will be returned. As such, the caches will be placed in the same locations
         if (luck([cell.i, cell.j, SEED].toString()) < CACHE_SPAWN_PROBABILITY) {
-          leafletFunctions.placeCache(this, cell);
+          let cache;
+          // If the cache has been visited before, load it from the momento
+          if (this.cacheMomentos.has(cell)) {
+            cache = createCache(cell, 0);
+            cache.fromMomento(this.cacheMomentos.get(cell)!);
+          } else { // Otherwise, create a new cache
+            cache = createCache(cell, INITIAL_COINS);
+          }
+          this.activeCaches.set(cell, cache);
+          leafletFunctions.placeCache(this, cache);
         }
       },
     );

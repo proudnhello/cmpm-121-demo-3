@@ -19,7 +19,6 @@ export interface ArrayIndex {
 export interface Coin {
   serial: string;
   originIndex: ArrayIndex;
-  owner: Cache;
   toString(): string;
 }
 
@@ -32,6 +31,9 @@ export interface Cache {
   collectCoin(): Coin;
   coinCount(): number;
   coinString(): string;
+
+  toMomento(): string;
+  fromMomento(momento: string): void;
 }
 
 // This function creates a cache at a given index, and fills it with a random number of coins up to a maximum
@@ -46,7 +48,6 @@ export function createCache(
       if (!coin) {
         return;
       }
-      coin.owner = this;
       this.coins.push(coin);
     },
     collectCoin() {
@@ -58,6 +59,20 @@ export function createCache(
     coinString() {
       return this.coins.map((coin) => coin.toString()).join("<br>");
     },
+    toMomento() {
+      // We don't need to store the index, as we know it from the cache's location
+      console.log(JSON.stringify({ coins: this.coins }));
+      return JSON.stringify(this);
+    },
+    fromMomento(momento: string) {
+      const parsed = JSON.parse(momento);
+      for (const sequencedCoin of parsed.coins) {
+        const coin = generateCoin(index, 0);
+        coin.serial = sequencedCoin.serial;
+        coin.originIndex = sequencedCoin.originIndex;
+        this.depositCoin(coin);
+      }
+    },
   };
 
   const coinNum = luck(
@@ -66,7 +81,7 @@ export function createCache(
   ) * maxInitialCoins; // This formatting is attrocious, but it's what deno fmt believes is correct
 
   for (let i = 0; i < coinNum; i++) {
-    cache.depositCoin(generateCoin(index, cache, i));
+    cache.depositCoin(generateCoin(index, i));
   }
 
   return cache;
@@ -75,12 +90,10 @@ export function createCache(
 // This function generates a coin at a given index, with a unique serial number based on the index
 export function generateCoin(
   originIndex: ArrayIndex,
-  cache: Cache,
   serialNumber: number,
 ): Coin {
   return {
     originIndex,
-    owner: cache,
     serial: serialNumber.toString(),
     toString() {
       return `Coin from (${originIndex.i}, ${originIndex.j}), serial: ${this.serial}`;
