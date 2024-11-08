@@ -110,7 +110,7 @@ function getCurrentLocation(): Promise<{ lat: number; long: number }> {
 async function setPlayerLocation() {
   try {
     const location = await getCurrentLocation();
-    leafletFunctions.resetPolyline();
+    leafletFunctions.jumpPlayerMarker(location);
     updatePlayerPosition(location);
     leafletFunctions.centerOnPoint(location);
     console.log("Got current location.");
@@ -171,6 +171,6 @@ clearStateButton.onclick = () => {
 movementButtons.appendChild(clearStateButton);
 
 board.loadState(player);
-
+playerDiv.dispatchEvent(playerUpdateEvent);
 // Create the initial board
 board.drawBoard(player);

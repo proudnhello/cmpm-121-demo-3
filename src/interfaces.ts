@@ -31,7 +31,6 @@ export function generateCoin(
     originIndex,
     serial: serialNumber.toString(),
     toString() {
-      console.log("originIndex", this.originIndex);
       return `Coin from (${this.originIndex.i}, ${this.originIndex.j}), serial: ${this.serial}`;
     },
   };
@@ -75,10 +74,6 @@ export function createCache(
       let coinString = "";
       for (const coin of this.coins) {
         coinString += coin.toString() + "<br>";
-      }
-      console.log(this.coins[0]!);
-      if (this.coins[0]) {
-        console.log(this.coins[0]!.toString());
       }
       return coinString;
     },

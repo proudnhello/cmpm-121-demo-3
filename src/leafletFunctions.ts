@@ -19,7 +19,7 @@ let playerMarker: leaflet.Marker;
 // The map object used throughout the game
 let map: leaflet.Map;
 
-let polyline: leaflet.Polyline;
+let polylines: leaflet.Polyline[];
 
 // An array of cache markers on the map
 const cacheMarkers: leaflet.Rectangle[] = [];
@@ -42,7 +42,7 @@ export function makeMap(element: HTMLElement, mapConfig: {
     scrollWheelZoom: mapConfig.scrollWheelZoom,
   });
 
-  polyline = leaflet.polyline([], { color: "red" }).addTo(map);
+  polylines = [leaflet.polyline([], { color: "red" }).addTo(map)];
 
   leaflet
     .tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
@@ -55,10 +55,10 @@ export function makeMap(element: HTMLElement, mapConfig: {
   return map;
 }
 
-// Wrapper function to place a marker for the player on the map at a given location.
+// Wrapper function to place a marker for the player on the map at a given location. Extends the current polyline to the new location.
 export function placePlayerMarker(location: GeoLocation) {
   playerMarker?.remove();
-  polyline.addLatLng(latLng(location.lat, location.long));
+  polylines[0].addLatLng(latLng(location.lat, location.long));
   playerMarker = leaflet.marker(
     leaflet.latLng(location.lat, location.long),
   );
@@ -66,8 +66,44 @@ export function placePlayerMarker(location: GeoLocation) {
   playerMarker.addTo(map);
 }
 
+// Wrapper function to jump the player marker to a new location without extending the polyline.
+export function jumpPlayerMarker(location: GeoLocation) {
+  polylines.unshift(leaflet.polyline([], { color: "red" }).addTo(map));
+  placePlayerMarker(location);
+}
+
 export function resetPolyline() {
-  polyline.setLatLngs([]);
+  for (const polyline of polylines) {
+    polyline.remove();
+  }
+  polylines = [leaflet.polyline([], { color: "red" }).addTo(map)];
+}
+
+export function getPolyPoints(): GeoLocation[][] {
+  // Polyline.getLatLngs() returns an array of LatLngs, or an array of arrays of LatLngs if the polyline is multi-polyline.
+  // This checks that it is an array, and if it has at least one element, that that element is not an array.
+  // By doing so, this will confirm that the polyline is not a multi-polyline, and that it has at least one point.
+  const geoLines: GeoLocation[][] = [[]];
+
+  for (let i = 0; i < polylines.length; i++) {
+    const line = polylines[i].getLatLngs() as leaflet.LatLng[];
+    geoLines.push([]);
+    for (const point of line) {
+      geoLines[i].push({ lat: point.lat, long: point.lng });
+    }
+  }
+
+  return geoLines;
+}
+
+export function setPolyPoints(lines: GeoLocation[][]) {
+  for (const line of lines) {
+    const polyline = leaflet.polyline([], { color: "red" }).addTo(map);
+    for (const point of line as GeoLocation[]) {
+      polyline.addLatLng(leaflet.latLng(point.lat, point.long));
+    }
+    polylines.unshift(polyline);
+  }
 }
 
 // Wrapper function to create a marker for a cache on the map at a given location.
@@ -114,6 +150,7 @@ export function placeCache(
           cache,
           cache.index,
         )!;
+        board.saveState(player);
       },
     );
 
@@ -128,6 +165,7 @@ export function placeCache(
           cache,
           cache.index,
         )!;
+        board.saveState(player);
       },
     );
 
@@ -157,5 +195,7 @@ export function clearMap() {
 
 // Wrapper function to center the map on a given location
 export function centerOnPoint(location: GeoLocation) {
-  map.setView(leaflet.latLng(location.lat, location.long));
+  map.setView(leaflet.latLng(location.lat, location.long), map.getZoom(), {
+    duration: 0,
+  });
 }

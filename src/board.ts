@@ -100,48 +100,69 @@ export class Board {
     return visibleCells;
   }
 
-  clearBoard() {
-    // Iterate over the active caches and make them momentos
+  // Set all the active caches to momentos
+  setCacheMomentos() {
     this.activeCaches.forEach((cache, index) => {
       this.cacheMomentos.set(index, cache.toMomento());
     });
+  }
+
+  // Clear the board of all markers and caches
+  clearBoard() {
+    // Iterate over the active caches and make them momentos
+    this.setCacheMomentos();
     // Clear the map of all markers
     leafletFunctions.clearMap();
   }
 
   // Save the current state of the board to local storage
   saveState(player: Player) {
+    // Save all the mutible state to local storage
+    // That is, player location, caches, the polyline, and the player's coins
+    this.setCacheMomentos();
     const playerLocation = player.location;
     const playerCache = player.cache;
+    const linePoints = leafletFunctions.getPolyPoints();
     localStorage.setItem(
       "mapState",
       JSON.stringify({
         playerLocation,
         cacheMomentos: Array.from(this.cacheMomentos.entries()),
         playerCoins: playerCache.coins,
+        linePoints,
       }),
     );
   }
 
   // Load the state of the board from local storage
-  loadState(player: Player): GeoLocation {
+  loadState(player: Player) {
     const state = JSON.parse(localStorage.getItem("mapState")!);
     if (!state) {
-      // An impossible location, to signal that the state was not loaded
-      return { lat: 200, long: 200 };
+      console.log("No state found in local storage, using default");
+      return;
     }
+    // Load the momentos from the state
     this.cacheMomentos = new Map();
     for (const momento of state.cacheMomentos) {
       const key: { i: number; j: number } = momento[0];
       this.cacheMomentos.set(this.getCannonicalLocation(key), momento[1]);
       this;
     }
+    // Draw the polyline on the map
+    const linePoints: GeoLocation[][] = state.linePoints;
+    leafletFunctions.setPolyPoints(linePoints);
+
     // From momento requires an unparsed object, so stupidly, we parse state.playerCoins back into json
     player.cache.fromMomento(JSON.stringify(state.playerCoins));
     player.location.lat = state.playerLocation.lat;
     player.location.long = state.playerLocation.long;
+
+    // Draw the board and center on the player
+    // We jump the player marker here so that if the player moved while offline, the polyline will be drawn correctly
+    leafletFunctions.jumpPlayerMarker(player.location);
     this.drawBoard(player);
-    return { lat: state.playerLocation.lat, long: state.playerLocation.long };
+    leafletFunctions.centerOnPoint(player.location);
+    return;
   }
 
   // Remove any state saved in local storage, then quickly reload the page before the foolish user can add more
