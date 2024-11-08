@@ -22,7 +22,7 @@ import { Board } from "./board.ts";
 // The size of a tile in degrees of latitude and longitude
 let playerMarker: leaflet.Marker;
 
-// The map object
+// The map object used throughout the game
 let map: leaflet.Map;
 
 // An array of cache markers on the map
@@ -75,10 +75,16 @@ export function placeCache(
   const index = cache.index;
   const GeoBounds = board.getCellBounds(index);
   // Convert the GeoLocation bounds to LatLngExpression bounds
-  const bounds = leaflet.latLngBounds([[GeoBounds[0].lat, GeoBounds[0].long], [
-    GeoBounds[1].lat,
-    GeoBounds[1].long,
-  ]]);
+  const bounds = leaflet.latLngBounds([
+    [
+      GeoBounds[0].lat,
+      GeoBounds[0].long,
+    ],
+    [
+      GeoBounds[1].lat,
+      GeoBounds[1].long,
+    ],
+  ]);
   const cacheMapBounds = leaflet.rectangle(bounds);
 
   // Add a popup to the cache rectangle, with two buttons
@@ -96,9 +102,11 @@ export function placeCache(
       () => {
         player.depositCoin(cache.collectCoin());
         playerDiv.dispatchEvent(playerUpdateEvent);
-        cachePopup.querySelector<HTMLDivElement>("div")!.innerHTML =
-          `There is a cache here at "${index.i},${index.j}". It has ${cache.coinCount()} coins in total. 
-          Those coins are: <br> ${cache.coinString()}`;
+        updateCachePopup(
+          cachePopup.querySelector<HTMLDivElement>("div")!,
+          cache,
+          cache.index,
+        )!;
       },
     );
 
@@ -108,9 +116,11 @@ export function placeCache(
       () => {
         cache.depositCoin(player.collectCoin());
         playerDiv.dispatchEvent(playerUpdateEvent);
-        cachePopup.querySelector<HTMLDivElement>("div")!.innerHTML =
-          `There is a cache here at "${index.i},${index.j}". It has ${cache.coinCount()} coins.
-          Those coins are: <br> ${cache.coinString()}`;
+        updateCachePopup(
+          cachePopup.querySelector<HTMLDivElement>("div")!,
+          cache,
+          cache.index,
+        )!;
       },
     );
 
@@ -126,4 +136,14 @@ export function clearMap() {
   for (const marker of cacheMarkers) {
     marker.remove();
   }
+}
+
+function updateCachePopup(
+  popup: HTMLDivElement,
+  cache: Cache,
+  index: { i: number; j: number },
+) {
+  popup.innerHTML = `
+    There is a cache here at "${index.i},${index.j}". It has ${cache.coinCount()} coins.<br>
+    Those coins are: <br> ${cache.coinString()}`;
 }

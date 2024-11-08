@@ -15,12 +15,13 @@ const INITIAL_COINS = 5;
 // The board class represents the game board, which is a grid of tiles.
 // Uses a flyweight pattern to store known locations, to avoid creating multiple objects for the same location.
 export class Board {
-  readonly tileWidth: number;
+  readonly tileWidth: number; // The width of each tile in degrees of latitude and longitude
   readonly tileVisibilityRadius: number;
 
+  // A map of known locations to avoid creating multiple objects for the same location
   private readonly knownLocations: Map<string, ArrayIndex>;
 
-  // Caches for tiles that are currently active, and for tiles that have been visited but are not currently active
+  // Caches for caches that are currently active, and for momentos of caches that have been visited but are not currently active
   private readonly activeCaches: Map<ArrayIndex, Cache>;
   private readonly cacheMomentos: Map<ArrayIndex, string>;
 
@@ -36,6 +37,7 @@ export class Board {
     this.cacheMomentos = new Map();
     this.knownLocations = new Map();
 
+    // Create the map object
     leafletFunctions.makeMap(document.getElementById("map")!, {
       center: playerLocation,
       zoom: GAMEPLAY_ZOOM_LEVEL,
@@ -46,7 +48,7 @@ export class Board {
     });
   }
 
-  // Returns the location of the tile at the given array index
+  // Returns the canonical location object for the given location
   private getCannonicalLocation(index: ArrayIndex): ArrayIndex {
     const { i, j } = index;
     const key = [i, j].toString();
@@ -56,7 +58,7 @@ export class Board {
     return this.knownLocations.get(key)!;
   }
 
-  // Returns the array index of the tile containing the given location
+  // Returns the index of the tile containing the given geo location
   getCellForPoint(location: GeoLocation): ArrayIndex {
     const i = Math.floor(location.lat / this.tileWidth);
     const j = Math.floor(location.long / this.tileWidth);
@@ -82,7 +84,6 @@ export class Board {
     const visibleCells: ArrayIndex[] = [];
     // Iterate over the square of side length 2 * tileVisibilityRadius + 1 centered at the given location, and add each cell to the list
     for (
-      // Why deno. Why must for loops be formatted like this?
       let di = -this.tileVisibilityRadius;
       di <= this.tileVisibilityRadius;
       di++

@@ -66,6 +66,7 @@ export function createCache(
     },
     fromMomento(momento: string) {
       const parsed = JSON.parse(momento);
+      // JSON.parse won't create Coin objects, so we need to do that manually
       for (const sequencedCoin of parsed.coins) {
         const coin = generateCoin(index, 0);
         coin.serial = sequencedCoin.serial;
@@ -87,7 +88,7 @@ export function createCache(
   return cache;
 }
 
-// This function generates a coin at a given index, with a unique serial number based on the index
+// This function generates a coin at a given index, with a unique serial number
 export function generateCoin(
   originIndex: ArrayIndex,
   serialNumber: number,
@@ -107,10 +108,11 @@ export const player = createCache({ i: 0, j: 0 }, 0);
 export const playerDiv = document.getElementById("player")!;
 playerDiv.innerHTML = "You have " + player.coinCount().toString() +
   " coins.<br>They are:<br> " + player.coinString();
+
+// This event is used to update the player's inventory display
+export const playerUpdateEvent = new Event("player-update");
+
 playerDiv.addEventListener("player-update", () => {
   playerDiv.innerHTML = "You have " + player.coinCount().toString() +
     " coins<br>They are:<br> " + player.coinString();
 });
-
-// This event is used to update the player's inventory display
-export const playerUpdateEvent = new Event("player-update");
