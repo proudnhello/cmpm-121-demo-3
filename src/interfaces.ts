@@ -4,7 +4,7 @@ import luck from "./luck.ts";
 
 import { Board } from "./board.ts";
 
-import * as leafletFunctions from "./leafletFunctions.ts";
+import * as mapFunctions from "./leafletFunctions.ts";
 
 // The idea for these interfaces is that they should be able to be used to represent a point on the map in two different ways:
 // 1. As a latitude and longitude
@@ -40,7 +40,7 @@ export function generateCoin(
       const button = document.createElement("button");
       button.textContent = text;
       button.onclick = () => {
-        leafletFunctions.centerOnPoint(board.getPointForCell(this.originIndex));
+        mapFunctions.centerOnPoint(board.getPointForCell(this.originIndex));
       };
       return button;
     },
@@ -103,6 +103,7 @@ export function createCache(
         console.log("Failed to parse momento");
         return;
       }
+
       // JSON.parse won't create Coin objects, so we need to do that manually
       for (const sequencedCoin of parsed) {
         const coin = generateCoin(index, 0);
